@@ -14,38 +14,38 @@ export default function BraintreeDropIn(props: any) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		useState<any>(undefined);
 
-	useEffect(() => {
-		if (show) {
-			const initializeBraintree = () =>
-				dropin.create(
-					{
-						// insert your tokenization key or client token here
-						authorization: 'sandbox_s9h8hg2r_vqz2fphk6ggkwksd',
-						container: '#braintree-drop-in-div',
-						card: {
-							overrides: {
-								fields: {
-									number: {
-										placeholder: '4111 1111 1111 1111',
-										prefill: '4111 1111 1111 1111',
-									},
-									cvv: {
-										placeholder: '123',
-									},
-									expirationDate: {
-										placeholder: '10/25',
-										prefill: '10/25',
-									},
-								},
+	const initializeBraintree = () =>
+		dropin.create(
+			{
+				// insert your tokenization key or client token here
+				authorization: 'sandbox_s9h8hg2r_vqz2fphk6ggkwksd',
+				container: '#braintree-drop-in-div',
+				card: {
+					overrides: {
+						fields: {
+							number: {
+								placeholder: '4111 1111 1111 1111',
+								prefill: '4111 1111 1111 1111',
+							},
+							cvv: {
+								placeholder: '123',
+							},
+							expirationDate: {
+								placeholder: '10/25',
+								prefill: '10/25',
 							},
 						},
 					},
-					function (error, instance) {
-						if (error) console.error(error);
-						else setBraintreeInstance(instance);
-					}
-				);
+				},
+			},
+			function (error, instance) {
+				if (error) console.error(error);
+				else setBraintreeInstance(instance);
+			}
+		);
 
+	useEffect(() => {
+		if (show) {
 			if (braintreeInstance) {
 				braintreeInstance.teardown().then(() => {
 					initializeBraintree();
@@ -54,7 +54,7 @@ export default function BraintreeDropIn(props: any) {
 				initializeBraintree();
 			}
 		}
-	}, [show, balance]);
+	}, []);
 
 	return (
 		<div style={{ display: `${show ? 'block' : 'none'}` }}>
@@ -84,8 +84,10 @@ export default function BraintreeDropIn(props: any) {
 									)({
 										amount: balance,
 										paymentMethodNonce,
-									}).then((result) => {
-										console.log(result);
+									}).then(() => {
+										braintreeInstance.teardown().then(() => {
+											initializeBraintree();
+										});
 									});
 								}
 							}
