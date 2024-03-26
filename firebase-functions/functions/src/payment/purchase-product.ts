@@ -26,13 +26,28 @@ const purchaseProduct = https.onCall(
 			.get();
 
 		if (!product.exists) {
-			return { error: 'product_not_found' };
+			return { error: 'product_not_found', success: false };
 		}
 
 		const productData = product.data();
 
 		if (!productData) {
-			return { error: 'product_not_found' };
+			return { error: 'product_not_found', success: false };
+		}
+
+		const user = await admin
+			.firestore()
+			.collection('users')
+			.doc(request.auth.uid)
+			.get();
+
+		if (
+			!user.exists ||
+			!user.data() ||
+			!user.data()?.balance ||
+			user.data()?.balance < productData.price
+		) {
+			return { error: 'insufficient_funds', success: false };
 		}
 
 		await admin.firestore().collection('transactions').doc().set({

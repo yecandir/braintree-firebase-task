@@ -25,7 +25,9 @@ const startPayment = https.onCall(
 			return { error: 'Not authenticated' };
 		}
 		const result = await gateway.transaction.sale({
-			customerId: request.auth.uid,
+			customer: {
+				id: request.auth.uid,
+			},
 			amount: request.data.amount,
 			paymentMethodNonce: request.data.paymentMethodNonce,
 			options: {
@@ -53,7 +55,7 @@ const startPayment = https.onCall(
 					user_id: request.auth.uid,
 					type: 'pay_in',
 					amount: request.data.amount,
-					timestamp: admin.firestore.FieldValue.serverTimestamp(),
+					created_at: admin.firestore.FieldValue.serverTimestamp(),
 					status: 'completed',
 				});
 		}
