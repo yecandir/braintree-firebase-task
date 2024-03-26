@@ -45,7 +45,19 @@ const Products = () => {
 									const result = await purchaseProduct({
 										product_id: product.id,
 									});
-									console.log(result.data);
+
+									const data = result?.data as {
+										success: boolean;
+										error: string;
+									};
+
+									if (data && data.success) {
+										alert('Product purchased successfully');
+									} else {
+										alert(
+											'Error: ' + data?.error || 'purchasing product'
+										);
+									}
 								} catch (error) {
 									console.error('Error purchasing product:', error);
 								}

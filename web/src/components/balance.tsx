@@ -3,7 +3,7 @@ import { db, auth } from '../utility/firebase'; // Import auth from firebase
 import './index.css';
 import {
 	collection,
-	getDocs,
+	onSnapshot,
 	query,
 	where,
 } from 'firebase/firestore';
@@ -11,29 +11,36 @@ import {
 const Balance = () => {
 	const [balance, setBalance] = useState(0);
 
-	useEffect(() => {
-		const getBalance = async () => {
-			if (!auth.currentUser) {
+	const setupListener = () => {
+		if (!auth.currentUser?.uid) {
+			return () => {
 				console.log('no user');
-				return;
-			}
-			const userDocRef = query(
+			};
+		}
+
+		const unsubscribe = onSnapshot(
+			query(
 				collection(db, 'users'),
 				where('id', '==', auth.currentUser.uid)
-			);
-			const userDocQuery = await getDocs(userDocRef);
-			const user = userDocQuery.docs.find(
-				(doc) => doc.id === auth.currentUser?.uid
-			);
-
-			console.log('user', user?.data().balance);
-			if (user) {
-				setBalance(user?.data().balance);
+			),
+			(snapshot) => {
+				const userDoc = snapshot.docs[0];
+				const balance = userDoc.data().balance;
+				setBalance(balance);
 			}
-		};
+		);
 
-		getBalance();
-	}, [auth.currentUser?.uid]); // Only re-run the query when the currently authenticated user's ID changes
+		return () => {
+			unsubscribe();
+		};
+	};
+
+	useEffect(() => {
+		const cleanup = setupListener();
+		return () => {
+			cleanup();
+		};
+	}, []);
 
 	return (
 		<div>
