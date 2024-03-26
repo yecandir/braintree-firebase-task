@@ -30,13 +30,11 @@ const Products = () => {
 	return (
 		<div>
 			<h1>Products</h1>
-			{products.map((product: DocumentData) => {
-				console.log(product);
-				return (
-					<div key={product.id}>
-						<h3>{product.id}</h3>
-						<h3>{product.name}</h3>
-						<p>{product.price}</p>
+			<div className="products-container">
+				{products.map((product: DocumentData) => (
+					<div className="product" key={product.id}>
+						<div>{product.name}</div>
+						<div>{product.price}</div>
 						<button
 							onClick={async () => {
 								try {
@@ -56,8 +54,8 @@ const Products = () => {
 							Buy
 						</button>
 					</div>
-				);
-			})}
+				))}
+			</div>
 		</div>
 	);
 };

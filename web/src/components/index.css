@@ -31,3 +31,31 @@
 	background-color: #8bdda8;
 	color: white;
 }
+
+.products-container {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.product {
+	flex: 0 0 calc(33.33% - 1rem); /* Adjust the width of each product card as needed */
+	margin-right: 1rem; /* Adjust the spacing between products */
+	margin-bottom: 1rem; /* Adjust the spacing between rows */
+}
+
+.transactions-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.transaction-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem; /* Optional: Add spacing between columns */
+	border-bottom: 1px solid #ccc; /* Optional: Add a border between transactions */
+	padding: 0.5rem 0; /* Optional: Add padding between transactions */
+}
+
+.transaction {
+	flex: 1; /* Each transaction takes up equal width */
+}

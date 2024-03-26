@@ -10,6 +10,7 @@ import DropIn from './components/payment';
 import { auth } from './utility/firebase';
 import Balance from './components/balance';
 import Products from './components/products';
+import Transactions from './components/transaction';
 
 function App() {
 	const [user, setUser] = useState<User | null>(null);
@@ -46,6 +47,8 @@ function App() {
 						<DropIn show="true" />
 
 						<Products />
+
+						<Transactions />
 					</>
 				) : (
 					<>
