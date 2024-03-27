@@ -4,20 +4,15 @@ import dropin from 'braintree-web-drop-in';
 import { functions } from '../utility/firebase';
 import { httpsCallable } from 'firebase/functions';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function BraintreeDropIn(props: any) {
+export default function BraintreeDropIn(props: { show: boolean }) {
 	const { show } = props;
-
 	const [balance, setBalance] = useState(0);
-
 	const [braintreeInstance, setBraintreeInstance] =
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		useState<any>(undefined);
+		useState<dropin.Dropin | null>(null);
 
 	const initializeBraintree = () =>
 		dropin.create(
 			{
-				// insert your tokenization key or client token here
 				authorization: 'sandbox_s9h8hg2r_vqz2fphk6ggkwksd',
 				container: '#braintree-drop-in-div',
 				card: {
@@ -29,6 +24,7 @@ export default function BraintreeDropIn(props: any) {
 							},
 							cvv: {
 								placeholder: '123',
+								prefill: '123',
 							},
 							expirationDate: {
 								placeholder: '10/25',
@@ -40,24 +36,40 @@ export default function BraintreeDropIn(props: any) {
 			},
 			function (error, instance) {
 				if (error) console.error(error);
+				if (!instance) console.error('No instance');
 				else setBraintreeInstance(instance);
 			}
 		);
 
 	useEffect(() => {
-		if (show) {
-			if (braintreeInstance) {
-				braintreeInstance.teardown().then(() => {
-					initializeBraintree();
-				});
-			} else {
-				initializeBraintree();
-			}
+		if (show && !braintreeInstance) {
+			initializeBraintree();
 		}
-	}, []);
+	}, [show, braintreeInstance]);
+
+	const handlePayment = () => {
+		if (braintreeInstance) {
+			braintreeInstance.requestPaymentMethod((error, payload) => {
+				if (error) {
+					console.error(error);
+				} else {
+					const paymentMethodNonce = payload.nonce;
+					httpsCallable(
+						functions,
+						'startPayment'
+					)({
+						amount: balance,
+						paymentMethodNonce,
+					}).then(() => {
+						braintreeInstance.clearSelectedPaymentMethod(); // Clear selected payment method
+					});
+				}
+			});
+		}
+	};
 
 	return (
-		<div style={{ display: `${show ? 'block' : 'none'}` }}>
+		<div style={{ display: show ? 'block' : 'none' }}>
 			<h2>Add Balance</h2>
 			<input
 				type="number"
@@ -65,37 +77,13 @@ export default function BraintreeDropIn(props: any) {
 					setBalance(Number(e.target.value));
 				}}
 			/>
-			<div id={'braintree-drop-in-div'} />
+			<div id="braintree-drop-in-div" />
 			<button
-				className={'braintreePayButton'}
+				className="braintreePayButton"
 				disabled={!braintreeInstance}
-				onClick={() => {
-					if (braintreeInstance) {
-						braintreeInstance.requestPaymentMethod(
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							(error: string, payload: any) => {
-								if (error) {
-									console.error(error);
-								} else {
-									const paymentMethodNonce = payload.nonce;
-									httpsCallable(
-										functions,
-										'startPayment'
-									)({
-										amount: balance,
-										paymentMethodNonce,
-									}).then(() => {
-										braintreeInstance.teardown().then(() => {
-											initializeBraintree();
-										});
-									});
-								}
-							}
-						);
-					}
-				}}
+				onClick={handlePayment}
 			>
-				{'Pay'}
+				Pay
 			</button>
 		</div>
 	);

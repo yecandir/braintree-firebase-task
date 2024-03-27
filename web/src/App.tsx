@@ -44,7 +44,7 @@ function App() {
 
 						<Balance />
 
-						<DropIn show="true" />
+						<DropIn show={true} />
 
 						<Products />
 
